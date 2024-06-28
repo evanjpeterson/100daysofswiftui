@@ -1,6 +1,6 @@
 # 100 Days of SwiftUI
 
-Many thanks to Paul Hudson at Hacking with Swift for arranging this course!
+Many thanks to Paul Hudson (@twostraws) at Hacking with Swift for arranging this course!
 
 Link: https://www.hackingwithswift.com/100/swiftui
 
