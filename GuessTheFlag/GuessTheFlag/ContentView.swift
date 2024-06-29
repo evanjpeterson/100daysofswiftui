@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+let questionsPerGame = 8
+
 struct ContentView: View {
     @State private var showingResult = false
+    @State private var showingFinalScore = false
+    @State private var questionsRemaining = questionsPerGame - 1
     @State private var score = 0
     @State var correctAnswer = Int.random(in: 0...2)
     @State private var userAnswer = 0
@@ -35,12 +39,23 @@ struct ContentView: View {
         if userIsCorrect {
             score += 1
         }
-        showingResult = true
+        if questionsRemaining > 0 {
+            showingResult = true
+        } else {
+            showingFinalScore = true
+        }
     }
 
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        questionsRemaining -= 1
+    }
+
+    func restartGame() {
+        score = 0
+        questionsRemaining = questionsPerGame
+        askQuestion()
     }
 
     var body: some View {
@@ -99,6 +114,13 @@ struct ContentView: View {
         } message: {
             Text(userIsCorrect ? "Good thinking!" :
                 "That's the flag of \(countries[userAnswer]).")
+        }
+        .alert("That's the game!", isPresented: $showingFinalScore) {
+            Button("Play again?", action: restartGame)
+        } message: {
+            Text(
+                "You scored \(score) / \(questionsPerGame)."
+            )
         }
     }
 }
