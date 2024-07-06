@@ -9,6 +9,16 @@ import SwiftUI
 
 let questionsPerGame = 8
 
+struct FlagImage: View {
+    var country: String
+
+    var body: some View {
+        Image(country)
+            .clipShape(.rect(cornerRadius: 16.0))
+            .shadow(radius: 4)
+    }
+}
+
 struct ContentView: View {
     @State private var showingResult = false
     @State private var showingFinalScore = false
@@ -93,9 +103,7 @@ struct ContentView: View {
                         Button {
                             handleTap(number)
                         } label: {
-                            Image(countries[number])
-                                .clipShape(.rect(cornerRadius: 16.0))
-                                .shadow(radius: 4)
+                            FlagImage(country: countries[number])
                         }
                     }
                 }

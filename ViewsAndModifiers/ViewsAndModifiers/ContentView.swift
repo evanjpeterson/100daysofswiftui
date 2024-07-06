@@ -7,15 +7,26 @@
 
 import SwiftUI
 
+struct Title: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.largeTitle)
+            .foregroundStyle(.blue)
+    }
+}
+
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack(spacing: 10) {
+            Text("Working Title")
+                .titleified()
         }
-        .padding()
+    }
+}
+
+extension View {
+    func titleified() -> some View {
+        modifier(Title())
     }
 }
 

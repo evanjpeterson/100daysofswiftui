@@ -20,7 +20,8 @@ struct ContentView: View {
     @FocusState private var amountIsFocused: Bool
 
     private var tipScalar: Double {
-        1.0 + Double(tipPercentage > 0 ? tipPercentage : customTipPercentage) * 0.01
+        1.0 + Double(tipPercentage > 0 ? tipPercentage : customTipPercentage) *
+            0.01
     }
 
     private var total: Double {
@@ -35,18 +36,22 @@ struct ContentView: View {
         NavigationStack {
             Form {
                 Section("Bill") {
-                    TextField("Amount", value: $checkAmount, format: .currency(code: currencyCode))
-                        .keyboardType(.decimalPad)
-                        .focused($amountIsFocused)
-                        .toolbar {
-                            if amountIsFocused {
-                                Button("Done") {
-                                    amountIsFocused = false
-                                }
+                    TextField(
+                        "Amount",
+                        value: $checkAmount,
+                        format: .currency(code: currencyCode)
+                    )
+                    .keyboardType(.decimalPad)
+                    .focused($amountIsFocused)
+                    .toolbar {
+                        if amountIsFocused {
+                            Button("Done") {
+                                amountIsFocused = false
                             }
                         }
+                    }
                     Picker("Split how many ways?", selection: $numberOfPeople) {
-                        ForEach(2 ..< 100) {
+                        ForEach(2..<100) {
                             Text("\($0)")
                         }
                     }
@@ -68,8 +73,11 @@ struct ContentView: View {
                         }
                     }
                     if showCustomTip {
-                        Picker("Custom tip percentage", selection: $customTipPercentage) {
-                            ForEach(0 ..< 101) {
+                        Picker(
+                            "Custom tip percentage",
+                            selection: $customTipPercentage
+                        ) {
+                            ForEach(0..<101) {
                                 Text($0, format: .percent)
                             }
                         }
@@ -80,6 +88,8 @@ struct ContentView: View {
                 }
                 Section("Total") {
                     Text(total, format: .currency(code: currencyCode))
+                        .foregroundStyle(total == checkAmount && total > 0 ?
+                            .red : .primary)
                 }
                 Section("Split amount") {
                     Text(perPerson, format: .currency(code: currencyCode))
