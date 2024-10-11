@@ -8,28 +8,31 @@
 import CoreML
 import SwiftUI
 
-let wakeUpToday = Calendar.current.date(
-    bySettingHour: 8,
-    minute: 0,
-    second: 0,
-    of: Date.now
-) ?? .now
-let wakeUpTomorrow = Calendar.current.date(
-    byAdding: .day,
-    value: 1,
-    to: wakeUpToday
-) ?? .now
-
 struct ContentView: View {
-    @State private var wakeUp = wakeUpTomorrow
+    static var defaultWakeTime: Date {
+        let wakeUpToday = Calendar.current.date(
+            bySettingHour: 8,
+            minute: 0,
+            second: 0,
+            of: Date.now
+        ) ?? .now
+        let wakeUpTomorrow = Calendar.current.date(
+            byAdding: .day,
+            value: 1,
+            to: wakeUpToday
+        ) ?? .now
+        return wakeUpTomorrow
+    }
+
+    @State private var wakeUp = defaultWakeTime
     @State private var sleepAmount = 8.0
-    @State private var coffeeCups = 1
+    @State private var coffeeCups = 2
 
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showingAlert = false
 
-    func calculateBedtime() {
+    func calculateBedtime() -> Date {
         do {
             let config = MLModelConfiguration()
             let model = try SleepCalculator(configuration: config)
@@ -48,48 +51,78 @@ struct ContentView: View {
             )
 
             let sleepTime = wakeUp - prediction.actualSleep
-            alertTitle = "Your ideal bedtime is..."
+            return sleepTime
             alertMessage =
                 "\(sleepTime.formatted(date: .omitted, time: .shortened))"
         } catch {
+            showingAlert = true
             alertTitle = "Oops!"
             alertMessage =
                 "Sorry, there was a problem calculating your recommended bedtime."
+            return .now
         }
-        showingAlert = true
+    }
+
+    private var bedtime: Date {
+        calculateBedtime()
     }
 
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("When would you prefer to wake up?")
+            Form {
+                Section {
+                    Text("When would you prefer to wake up?")
+                        .font(.headline)
+                        .listRowSeparator(.hidden)
+                    DatePicker(
+                        "Please select a time",
+                        selection: $wakeUp,
+                        displayedComponents: .hourAndMinute
+                    ).frame(
+                        maxWidth: .infinity,
+                        alignment: .trailing
+                    )
+                    .labelsHidden()
+                }
+                Section {
+                    Text("How many hours of sleep would you like?")
+                        .font(.headline)
+                        .listRowSeparator(.hidden)
+                    Stepper(
+                        "\(sleepAmount.formatted()) hours",
+                        value: $sleepAmount,
+                        in: 4...12,
+                        step: 0.5
+                    )
+                }
+                Section {
+                    Text(
+                        "How many cups of coffee do you typically drink per day?"
+                    )
                     .font(.headline)
-                DatePicker(
-                    "Please enter a time",
-                    selection: $wakeUp,
-                    displayedComponents: .hourAndMinute
-                ).labelsHidden()
-                Text("How many hours of sleep would you like?")
-                    .font(.headline)
-                Stepper(
-                    "\(sleepAmount.formatted()) hours",
-                    value: $sleepAmount,
-                    in: 4...12,
-                    step: 0.5
-                )
-                Text("How many cups of coffee do you drink per day?")
-                    .font(.headline)
-                Stepper(
-                    "\(coffeeCups) cup\(coffeeCups != 1 ? "s" : "")",
-                    value: $coffeeCups,
-                    in: 0...20
-                )
+                    .listRowSeparator(.hidden)
+
+                    Picker(
+                        "Please select a number of cups",
+                        selection: $coffeeCups
+                    ) {
+                        ForEach(0...20, id: \.self) {
+                            Text("^[\($0) cup](inflect: true)")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .labelsHidden()
+                }
+                Section {
+                    Text("Your ideal bedtime is...")
+                        .font(.headline)
+                    Text(
+                        "\(bedtime.formatted(date: .omitted, time: .shortened))"
+                    )
+                    .font(.largeTitle)
+                }
             }
-            .padding(32)
             .navigationTitle("BetterRest")
-            .toolbar {
-                Button("Calculate", action: calculateBedtime)
-            }
             .alert(alertTitle, isPresented: $showingAlert) {
                 Button("OK") {}
             } message: {
